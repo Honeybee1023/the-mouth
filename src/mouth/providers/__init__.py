@@ -1,3 +1,4 @@
 from .base import Provider
+from .claude import ClaudeProvider
 
-__all__ = ["Provider"]
+__all__ = ["ClaudeProvider", "Provider"]
