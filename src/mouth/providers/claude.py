@@ -86,10 +86,10 @@ class ClaudeProvider(Provider):
         try:
             data = json.loads(text)
         except json.JSONDecodeError as exc:
-            raise ValueError(\"Claude returned invalid JSON for action resolving\") from exc
+            raise ValueError("Claude returned invalid JSON for action resolving") from exc
 
         if not isinstance(data, list):
-            raise ValueError(\"Claude action response must be a JSON array\")
+            raise ValueError("Claude action response must be a JSON array")
 
         return [ExecutionAction.model_validate(item) for item in data]
 
