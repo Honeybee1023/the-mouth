@@ -1,0 +1,24 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "agent-one-mouth"
+version = "0.1.0"
+description = "Translate natural language intent into browser execution actions."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "pydantic>=2.0",
+  "anthropic>=0.30",
+]
+
+[project.scripts]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mouth"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra"
+testpaths = ["tests"]
