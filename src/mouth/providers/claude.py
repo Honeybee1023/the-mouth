@@ -54,7 +54,44 @@ class ClaudeProvider(Provider):
         screenshot_b64: str,
         app_context: str | None,
     ) -> list[ExecutionAction]:
-        raise NotImplementedError
+        system_prompt = _load_prompt("resolve_system.txt")
+        user_payload = {
+            "primitive": primitive.model_dump(),
+            "app_context": app_context,
+        }
+        response = self._client.messages.create(
+            model=self._model,
+            system=system_prompt,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type": "image/png",
+                                "data": screenshot_b64,
+                            },
+                        },
+                        {
+                            "type": "text",
+                            "text": json.dumps(user_payload, ensure_ascii=True),
+                        },
+                    ],
+                }
+            ],
+        )
+        text = _extract_text(response)
+        try:
+            data = json.loads(text)
+        except json.JSONDecodeError as exc:
+            raise ValueError(\"Claude returned invalid JSON for action resolving\") from exc
+
+        if not isinstance(data, list):
+            raise ValueError(\"Claude action response must be a JSON array\")
+
+        return [ExecutionAction.model_validate(item) for item in data]
 
 
 def _load_prompt(filename: str) -> str:
