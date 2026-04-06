@@ -1,6 +1,6 @@
 # agent-one-mouth
 
-The Mouth is a translation layer that converts natural language intent into low-level browser execution actions. It is designed to stay stateless and pure: it never executes actions or captures screens. It only translates.
+**the-mouth** is the neural translation engine for Agent One, a neuro-symbolic Programming by Demonstration platform built at MIT CSAIL. It decomposes freeform natural language instructions into structured UI primitives using LLM reasoning, then grounds those primitives to pixel-precise mouse and keyboard actions using VLM visual understanding — bridging the gap between what a user *says* and what a browser *does*.
 
 **Three layers**
 1. Natural language intent
