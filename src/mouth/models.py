@@ -13,7 +13,7 @@ class MouthInput(BaseModel):
 
 class PrimitiveAction(BaseModel):
     action_type: str
-    target: str
+    target: str | None = None
     parameters: dict
     ordering: int
     depends_on: list[int] | None = None
