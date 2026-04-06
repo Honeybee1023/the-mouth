@@ -21,6 +21,15 @@ def test_primitive_action_instantiation():
     assert action.parameters["kind"] == "textbox"
 
 
+def test_primitive_action_without_target():
+    action = PrimitiveAction(
+        action_type="select_all_text",
+        parameters={},
+        ordering=1,
+    )
+    assert action.target is None
+
+
 def test_execution_action_instantiation():
     action = ExecutionAction(
         action_type="mouse_click",
