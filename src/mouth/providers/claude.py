@@ -7,6 +7,7 @@ from typing import Any
 from anthropic import Anthropic
 
 from ..models import ExecutionAction, PrimitiveAction
+from ..primitives_registry import GroundingType, get_primitive_spec
 from .base import Provider
 
 
@@ -30,6 +31,7 @@ class ClaudeProvider(Provider):
         response = self._client.messages.create(
             model=self._model,
             system=system_prompt,
+            max_tokens=4096,
             messages=[
                 {
                     "role": "user",
@@ -54,6 +56,28 @@ class ClaudeProvider(Provider):
         screenshot_b64: str,
         app_context: str | None,
     ) -> list[ExecutionAction]:
+        spec = get_primitive_spec(primitive.action_type)
+        if spec and spec.grounding == GroundingType.UNGROUNDED:
+            if spec.keyboard_shortcut:
+                return [
+                    ExecutionAction(
+                        action_type="keyboard_shortcut",
+                        keys=spec.keyboard_shortcut,
+                        confidence=1.0,
+                        source_primitive_idx=primitive.ordering,
+                    )
+                ]
+            if primitive.action_type == "type_text":
+                text = primitive.parameters.get("text", "")
+                return [
+                    ExecutionAction(
+                        action_type="keyboard_type",
+                        text=text,
+                        confidence=1.0,
+                        source_primitive_idx=primitive.ordering,
+                    )
+                ]
+
         system_prompt = _load_prompt("resolve_system.txt")
         user_payload = {
             "primitive": primitive.model_dump(),
@@ -62,6 +86,7 @@ class ClaudeProvider(Provider):
         response = self._client.messages.create(
             model=self._model,
             system=system_prompt,
+            max_tokens=4096,
             messages=[
                 {
                     "role": "user",
@@ -103,9 +128,15 @@ def _extract_text(response: Any) -> str:
     content = getattr(response, "content", None)
     if not content:
         raise ValueError("Claude returned empty response content")
-
     first = content[0]
     text = getattr(first, "text", None)
     if not text:
         raise ValueError("Claude response did not include text output")
+    text = text.strip()
+    if text.startswith("```"):
+        lines = text.split("\n")
+        lines = lines[1:]
+        if lines and lines[-1].strip() == "```":
+            lines = lines[:-1]
+        text = "\n".join(lines).strip()
     return text
